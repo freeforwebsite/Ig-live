@@ -198,7 +198,11 @@
       <div id="reelThumb" style="width: 60px; height: 80px; background: rgba(0,0,0,0.3); border-radius: 8px; background-size: cover; background-position: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2);"></div>
       <div style="flex:1; display:flex; justify-content: space-around; align-items:center;">
         <div class="reel-item">
-          <div class="stat-label">Latest Reel Likes</div>
+          <div class="stat-label">Plays</div>
+          <div class="stat-value" id="reelViews" style="color: var(--success);">—</div>
+        </div>
+        <div class="reel-item">
+          <div class="stat-label">Likes</div>
           <div class="stat-value" id="reelLikes">—</div>
         </div>
         <div class="reel-item">
@@ -244,6 +248,7 @@
     logCount: document.getElementById('logCount'),
     targetInp: document.getElementById('targetInput'),
     timer: document.getElementById('refreshTimer'),
+    rViews: document.getElementById('reelViews'),
     rLikes: document.getElementById('reelLikes'),
     rComms: document.getElementById('reelComments'),
     rThumb: document.getElementById('reelThumb'),
@@ -352,6 +357,7 @@
       const res = await fetch('/api/reel', { cache: 'no-store' });
       const data = await res.json();
       if (res.ok && !data.error) {
+        els.rViews.textContent = data.view_count !== null ? format(data.view_count) : 'N/A';
         els.rLikes.textContent = format(data.like_count);
         els.rComms.textContent = format(data.comments_count);
         if (data.thumbnail_url) {
