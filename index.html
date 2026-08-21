@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LIVE FOLLOW // Concert Counter</title>
+<style>
+  @font-face {
+    font-family: 'system-mono';
+    src: local('SF Mono'), local('Consolas'), local('Menlo');
+  }
+
+  :root{
+    --bg-void: #0a0612;
+    --bg-panel: #130b24;
+    --purple-electric: #a742ff;
+    --purple-deep: #5b21b6;
+    --blue-electric: #00d4ff;
+    --green-flash: #39ff8f;
+    --pink-accent: #ff2d95;
+    --text-dim: #9d8fc7;
+    --line: rgba(167, 66, 255, 0.25);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  html, body{
+    height:100%;
+    background: var(--bg-void);
+    color:#fff;
+    font-family: 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+    overflow-x:hidden;
+  }
+
+  body{
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(167,66,255,0.18), transparent 45%),
+      radial-gradient(circle at 85% 75%, rgba(0,212,255,0.14), transparent 50%),
+      radial-gradient(circle at 50% 100%, rgba(57,255,143,0.08), transparent 60%);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* scanline / grid atmosphere */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image: linear-gradient(rgba(167,66,255,0.05) 1px, transparent 1px),
+                       linear-gradient(90deg, rgba(167,66,255,0.05) 1px, transparent 1px);
+    background-size: 42px 42px;
+    pointer-events:none;
+    z-index:0;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 85%);
+  }
+
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:640px;
+    margin:0 auto;
+    width:100%;
+    padding: 18px 16px 28px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    min-height:100vh;
+  }
+
+  /* ---- header / target input ---- */
+  header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 10px 14px;
+    background: rgba(19,11,36,0.7);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(6px);
+  }
+
+  .pulse-dot{
+    width:9px; height:9px;
+    background: var(--green-flash);
+    box-shadow: 0 0 8px var(--green-flash), 0 0 18px var(--green-flash);
+    flex-shrink:0;
+    animation: dotpulse 1.4s ease-in-out infinite;
+  }
+  @keyframes dotpulse{
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:0.4; transform:scale(0.7); }
+  }
+
+  .target-field{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .at-sign{
+    color: var(--purple-electric);
+    font-weight:900;
+    font-size:15px;
+    letter-spacing:0.5px;
+  }
+  #targetInput{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    text-transform: lowercase;
+    min-width:0;
+  }
+  #targetInput::placeholder{ color: var(--text-dim); }
+
+  .live-tag{
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:1.5px;
+    color: var(--bg-void);
+    background: var(--green-flash);
+    padding:4px 8px;
+    flex-shrink:0;
+  }
+
+  /* ---- hero counter ---- */
+  .hero{
+    text-align:center;
+    padding: 22px 10px 8px;
+    position:relative;
+  }
+
+  .hero-label{
+    font-size:11px;
+    letter-spacing:4px;
+    font-weight:700;
+    color: var(--blue-electric);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+
+  .count-display{
+    font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
+    font-weight:900;
+    font-size: clamp(58px, 17vw, 108px);
+    line-height:0.95;
+    letter-spacing:-1px;
+    color:#fff;
+    text-shadow:
+      0 0 12px rgba(167,66,255,0.9),
+      0 0 32px rgba(167,66,255,0.6),
+      0 0 60px rgba(0,212,255,0.35);
+    position:relative;
+    display:inline-block;
+  }
+  .count-display.flash{
+    animation: flashcount 0.35s ease-out;
+  }
+  @keyframes flashcount{
+    0%{ text-shadow: 0 0 4px #fff, 0 0 40px var(--green-flash), 0 0 90px var(--green-flash); transform: scale(1.035); }
+    100%{ text-shadow: 0 0 12px rgba(167,66,255,0.9), 0 0 32px rgba(167,66,255,0.6), 0 0 60px rgba(0,212,255,0.35); transform: scale(1); }
+  }
+
+  .delta-float{
+    position:absolute;
+    top:14px;
+    right:0;
+    font-size:15px;
+    font-weight:900;
+    color: var(--green-flash);
+    opacity:0;
+    pointer-events:none;
+  }
+  .delta-float.show{
+    animation: floatup 1s ease-out forwards;
+  }
+  @keyframes floatup{
+    0%{ opacity:1; transform: translateY(0); }
+    100%{ opacity:0; transform: translateY(-38px); }
+  }
+
+  .hero-sub{
+    margin-top:6px;
+    font-size:12px;
+    color: var(--text-dim);
+    letter-spacing:1px;
+  }
+  .hero-sub span{ color: var(--pink-accent); font-weight:800; }
+
+  /* ---- progress ---- */
+  .progress-block{
+    padding: 14px 16px 16px;
+    background: rgba(19,11,36,0.7);
+    border: 1px solid var(--line);
+  }
+  .progress-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .progress-title{
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color: var(--text-dim);
+    font-weight:700;
+  }
+  .progress-target{
+    font-size:12px;
+    font-weight:900;
+    color: var(--blue-electric);
+  }
+  .bar-track{
+    height:14px;
+    background: rgba(255,255,255,0.06);
+    border:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--purple-deep), var(--purple-electric) 45%, var(--blue-electric));
+    box-shadow: 0 0 14px var(--purple-electric);
+    transition: width 0.5s cubic-bezier(.22,1,.36,1);
+    position:relative;
+  }
+  .bar-fill::after{
+    content:"";
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(115deg, rgba(255,255,255,0.18) 0 6px, transparent 6px 14px);
+    mix-blend-mode: overlay;
+  }
+  .bar-pct{
+    margin-top:8px;
+    text-align:right;
+    font-size:11px;
+    color: var(--green-flash);
+    font-weight:800;
+    letter-spacing:1px;
+  }
+
+  /* ---- stats row ---- */
+  .stats-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+  }
+  .stat-card{
+    background: rgba(19,11,36,0.7);
+    border: 1px solid var(--line);
+    padding: 14px 14px 12px;
+    position:relative;
+    overflow:hidden;
+  }
+  .stat-card::before{
+    content:"";
+    position:absolute; top:0; left:0;
+    width:3px; height:100%;
+    background: var(--pink-accent);
+    box-shadow: 0 0 10px var(--pink-accent);
+  }
+  .stat-card.velocity::before{ background: var(--blue-electric); box-shadow: 0 0 10px var(--blue-electric); }
+  .stat-label{
+    font-size:10px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color: var(--text-dim);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .stat-value{
+    font-size: clamp(24px, 6vw, 32px);
+    font-weight:900;
+    color:#fff;
+    line-height:1;
+  }
+  .stat-value.pink{ color: var(--pink-accent); text-shadow: 0 0 14px rgba(255,45,149,0.6); }
+  .stat-value.blue{ color: var(--blue-electric); text-shadow: 0 0 14px rgba(0,212,255,0.6); }
+  .stat-unit{
+    font-size:11px;
+    color: var(--text-dim);
+    font-weight:600;
+    margin-left:3px;
+  }
+
+  /* ---- event log ---- */
+  .log-block{
+    flex:1;
+    background: rgba(19,11,36,0.7);
+    border: 1px solid var(--line);
+    display:flex;
+    flex-direction:column;
+    min-height:180px;
+    overflow:hidden;
+  }
+  .log-head{
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color: var(--text-dim);
+    font-weight:700;
+    display:flex;
+    justify-content:space-between;
+  }
+  .log-head .n{ color: var(--green-flash); }
+  .log-body{
+    flex:1;
+    overflow:hidden;
+    padding: 6px 0;
+    position:relative;
+  }
+  .log-row{
+    padding: 8px 14px;
+    font-size:13px;
+    font-weight:600;
+    color:#e8e0ff;
+    border-bottom: 1px solid rgba(167,66,255,0.1);
+    animation: login 0.4s ease-out;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  @keyframes login{
+    0%{ opacity:0; transform: translateX(-14px); background: rgba(57,255,143,0.12); }
+    100%{ opacity:1; transform: translateX(0); background: transparent; }
+  }
+  .log-row .uname{ color: var(--blue-electric); font-weight:800; }
+  .log-row .bolt{ color: var(--green-flash); font-size:10px; }
+
+  footer{
+    text-align:center;
+    font-size:10px;
+    letter-spacing:2px;
+    color: rgba(157,143,199,0.5);
+    text-transform:uppercase;
+    padding-top:4px;
+  }
+
+  @media (max-width:380px){
+    .count-display{ font-size: clamp(48px, 16vw, 90px); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="pulse-dot"></div>
+    <div class="target-field">
+      <span class="at-sign">#</span>
+      <input id="targetInput" type="text" value="NEONFEST2026" maxlength="24" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="live-tag">LIVE</div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-label">Followers Right Now</div>
+    <div style="position:relative; display:inline-block;">
+      <div class="count-display" id="countDisplay">0</div>
+      <div class="delta-float" id="deltaFloat">+1</div>
+    </div>
+    <div class="hero-sub">Crowd is <span id="crowdMood">warming up</span></div>
+  </div>
+
+  <div class="progress-block">
+    <div class="progress-head">
+      <div class="progress-title">Road to</div>
+      <div class="progress-target" id="targetLabel">10,000</div>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="barFill"></div>
+    </div>
+    <div class="bar-pct" id="barPct">0% there</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Gained Tonight</div>
+      <div class="stat-value pink" id="gainedTonight">0</div>
+    </div>
+    <div class="stat-card velocity">
+      <div class="stat-label">Velocity</div>
+      <div class="stat-value blue" id="velocity">0<span class="stat-unit">/min</span></div>
+    </div>
+  </div>
+
+  <div class="log-block">
+    <div class="log-head"><span>Live Activity</span><span class="n" id="logCount">0 events</span></div>
+    <div class="log-body" id="logBody"></div>
+  </div>
+
+  <footer>Live via Instagram Graph API &middot; updates every few seconds</footer>
+</div>
+
+<script>
+(function(){
+  const MILESTONE_KEY = 'milestone';
+  let MILESTONE = 10000;
+  const POLL_MS = 8000; // how often we ask our backend for the real count (Graph API is not sub-second live)
+
+  let count = null;        // real follower count once first fetched
+  let startOfSessionCount = null;
+  let gainedTonight = 0;
+  let eventTotal = 0;
+  let recentGains = [];    // timestamps of observed increases, for velocity display
+  let pollFailures = 0;
+
+  const countDisplay = document.getElementById('countDisplay');
+  const deltaFloat = document.getElementById('deltaFloat');
+  const barFill = document.getElementById('barFill');
+  const barPct = document.getElementById('barPct');
+  const targetLabel = document.getElementById('targetLabel');
+  const gainedTonightEl = document.getElementById('gainedTonight');
+  const velocityEl = document.getElementById('velocity');
+  const logBody = document.getElementById('logBody');
+  const logCount = document.getElementById('logCount');
+  const crowdMood = document.getElementById('crowdMood');
+  const targetInput = document.getElementById('targetInput');
+
+  function formatCount(n){
+    return n.toLocaleString('en-US');
+  }
+
+  function updateProgress(){
+    if (count === null) return;
+    const pct = Math.min(100, (count / MILESTONE) * 100);
+    barFill.style.width = pct.toFixed(1) + '%';
+    barPct.textContent = pct >= 100 ? 'MILESTONE REACHED' : pct.toFixed(1) + '% there';
+    targetLabel.textContent = formatCount(MILESTONE);
+  }
+
+  function updateVelocity(){
+    const now = Date.now();
+    recentGains = recentGains.filter(t => now - t < 60000);
+    velocityEl.innerHTML = recentGains.length + '<span class="stat-unit">/min</span>';
+  }
+
+  function updateMood(){
+    const v = recentGains.length;
+    if (v >= 15) crowdMood.textContent = 'going wild';
+    else if (v >= 8) crowdMood.textContent = 'hyped';
+    else if (v >= 3) crowdMood.textContent = 'buzzing';
+    else crowdMood.textContent = 'warming up';
+  }
+
+  function pushLog(text){
+    eventTotal++;
+    logCount.textContent = eventTotal + ' events';
+    const row = document.createElement('div');
+    row.className = 'log-row';
+    row.innerHTML = '<span class="bolt">&#9679;</span>' + text;
+    logBody.insertBefore(row, logBody.firstChild);
+    while (logBody.children.length > 7){
+      logBody.removeChild(logBody.lastChild);
+    }
+  }
+
+  function applyNewCount(newCount, username){
+    if (count === null){
+      // first load
+      count = newCount;
+      startOfSessionCount = newCount;
+      countDisplay.textContent = formatCount(count);
+      updateProgress();
+      pushLog('Connected to <span class="uname">@' + (username || targetInput.value) + '</span> — tracking live');
+      return;
+    }
+
+    const diff = newCount - count;
+    if (diff === 0) return;
+
+    count = newCount;
+    gainedTonight = Math.max(0, count - startOfSessionCount);
+
+    if (diff > 0){
+      recentGains.push(Date.now());
+      pushLog('<span class="uname">+' + diff + '</span> new follower' + (diff > 1 ? 's' : '') + '!');
+    } else {
+      pushLog('Count adjusted <span class="uname">' + diff + '</span>');
+    }
+
+    countDisplay.textContent = formatCount(count);
+    countDisplay.classList.remove('flash');
+    void countDisplay.offsetWidth;
+    countDisplay.classList.add('flash');
+
+    deltaFloat.textContent = (diff > 0 ? '+' : '') + diff;
+    deltaFloat.classList.remove('show');
+    void deltaFloat.offsetWidth;
+    deltaFloat.classList.add('show');
+
+    gainedTonightEl.textContent = formatCount(gainedTonight);
+    updateProgress();
+    updateVelocity();
+    updateMood();
+  }
+
+  async function fetchRealCount(){
+    try {
+      const res = await fetch('/api/followers', { cache: 'no-store' });
+      const data = await res.json();
+
+      if (!res.ok || data.error){
+        pollFailures++;
+        if (pollFailures === 1){
+          pushLog('<span style="color:#ff5c5c">Backend error: ' + (data.error || 'unknown') + '</span>');
+        }
+        return;
+      }
+
+      pollFailures = 0;
+      applyNewCount(data.followers_count, data.username);
+    } catch (err){
+      pollFailures++;
+      if (pollFailures === 1){
+        pushLog('<span style="color:#ff5c5c">Could not reach /api/followers</span>');
+      }
+    }
+  }
+
+  // init
+  updateVelocity();
+  updateMood();
+  targetInput.addEventListener('input', () => {
+    targetInput.value = targetInput.value.toUpperCase();
+  });
+
+  fetchRealCount();
+  setInterval(fetchRealCount, POLL_MS);
+  setInterval(updateVelocity, 3000);
+})();
+</script>
+</body>
+</html>
