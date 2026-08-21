@@ -418,7 +418,7 @@
 (function(){
   const MILESTONE_KEY = 'milestone';
   let MILESTONE = 10000;
-  const POLL_MS = 8000; // how often we ask our backend for the real count (Graph API is not sub-second live)
+  const POLL_MS = 3000;
 
   let count = null;        // real follower count once first fetched
   let startOfSessionCount = null;
