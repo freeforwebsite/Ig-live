@@ -132,7 +132,8 @@
   .stat-value { font-size: 26px; font-weight: 800; }
   .stat-value span { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-left: 2px; }
   
-  .reel-box { grid-column: span 3; display: flex; justify-content: space-around; padding: 20px 10px; }
+  .reel-box { grid-column: span 3; display: flex; justify-content: space-around; padding: 20px 10px; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; }
+  .reel-box:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3); }
   .reel-item { display: flex; flex-direction: column; align-items: center; }
   .reel-item .stat-value { font-size: 24px; color: #fff; }
 
@@ -193,16 +194,19 @@
       <div class="stat-label">Velocity</div>
       <div class="stat-value" id="velocity">0<span>/min</span></div>
     </div>
-    <div class="glass-panel reel-box">
-      <div class="reel-item">
-        <div class="stat-label">Latest Reel Likes</div>
-        <div class="stat-value" id="reelLikes">—</div>
+    <a href="#" target="_blank" id="reelLink" class="glass-panel reel-box" style="text-decoration: none; align-items: center; justify-content: flex-start; gap: 20px;">
+      <div id="reelThumb" style="width: 60px; height: 80px; background: rgba(0,0,0,0.3); border-radius: 8px; background-size: cover; background-position: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2);"></div>
+      <div style="flex:1; display:flex; justify-content: space-around; align-items:center;">
+        <div class="reel-item">
+          <div class="stat-label">Latest Reel Likes</div>
+          <div class="stat-value" id="reelLikes">—</div>
+        </div>
+        <div class="reel-item">
+          <div class="stat-label">Comments</div>
+          <div class="stat-value" id="reelComments">—</div>
+        </div>
       </div>
-      <div class="reel-item">
-        <div class="stat-label">Comments</div>
-        <div class="stat-value" id="reelComments">—</div>
-      </div>
-    </div>
+    </a>
   </div>
 
   <div class="glass-panel" style="flex:1;">
@@ -241,7 +245,9 @@
     targetInp: document.getElementById('targetInput'),
     timer: document.getElementById('refreshTimer'),
     rLikes: document.getElementById('reelLikes'),
-    rComms: document.getElementById('reelComments')
+    rComms: document.getElementById('reelComments'),
+    rThumb: document.getElementById('reelThumb'),
+    rLink: document.getElementById('reelLink')
   };
 
   const savedStart = localStorage.getItem('ig_startOfSessionCount');
@@ -348,6 +354,12 @@
       if (res.ok && !data.error) {
         els.rLikes.textContent = format(data.like_count);
         els.rComms.textContent = format(data.comments_count);
+        if (data.thumbnail_url) {
+          els.rThumb.style.backgroundImage = 'url(' + data.thumbnail_url + ')';
+        }
+        if (data.permalink) {
+          els.rLink.href = data.permalink;
+        }
       }
     } catch (e){}
   }

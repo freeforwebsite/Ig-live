@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     // Note: 'views' or 'play_count' is not natively exposed on the base media node in this API 
     // without querying /insights, which requires additional permissions (instagram_manage_insights).
     // We remove it from the fields to prevent the API from throwing a 400/502 error.
-    const reelUrl = `https://graph.instagram.com/v21.0/${reel.id}?fields=like_count,comments_count,permalink,timestamp&access_token=${encodeURIComponent(IG_ACCESS_TOKEN)}`;
+    const reelUrl = `https://graph.instagram.com/v21.0/${reel.id}?fields=like_count,comments_count,permalink,timestamp,thumbnail_url,media_url,caption&access_token=${encodeURIComponent(IG_ACCESS_TOKEN)}`;
     const reelRes = await fetch(reelUrl);
     const reelData = await reelRes.json();
 
@@ -40,6 +40,8 @@ export default async function handler(req, res) {
       like_count: reelData.like_count ?? 0,
       comments_count: reelData.comments_count ?? 0,
       permalink: reelData.permalink,
+      thumbnail_url: reelData.thumbnail_url || reelData.media_url, // fallback
+      caption: reelData.caption || 'Latest Reel',
       fetched_at: new Date().toISOString()
     });
   } catch (err) {
