@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     }
 
     // 2. Get view_count for that reel
-    const reelUrl = `https://graph.instagram.com/v21.0/${reel.id}?fields=view_count,like_count,comments_count,permalink,timestamp&access_token=${encodeURIComponent(IG_ACCESS_TOKEN)}`;
+    const reelUrl = `https://graph.instagram.com/v21.0/${reel.id}?fields=views,like_count,comments_count,permalink,timestamp&access_token=${encodeURIComponent(IG_ACCESS_TOKEN)}`;
     const reelRes = await fetch(reelUrl);
     const reelData = await reelRes.json();
 
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
 
     res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=10');
     return res.status(200).json({
-      view_count: reelData.view_count ?? 0,
+      view_count: reelData.views ?? 0,
       like_count: reelData.like_count ?? 0,
       comments_count: reelData.comments_count ?? 0,
       permalink: reelData.permalink,
