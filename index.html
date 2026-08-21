@@ -148,6 +148,36 @@
   @keyframes slidein { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
   .log-row .dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
   .log-row strong { color: var(--text-main); font-weight: 700; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    z-index: 100; display: none; justify-content: center; align-items: center; padding: 20px;
+    opacity: 0; transition: opacity 0.3s ease;
+  }
+  .modal-overlay.show { display: flex; opacity: 1; }
+  .modal-content {
+    background: rgba(30, 25, 60, 0.9);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px; width: 100%; max-width: 800px; max-height: 85vh;
+    overflow-y: auto; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    transform: translateY(20px); transition: transform 0.3s ease;
+  }
+  .modal-overlay.show .modal-content { transform: translateY(0); }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-header h2 { font-size: 24px; font-weight: 900; letter-spacing: -1px; }
+  .close-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; transition: background 0.2s; }
+  .close-btn:hover { background: rgba(255,255,255,0.2); }
+  
+  .reels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .reel-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; transition: transform 0.2s; }
+  .reel-card:hover { transform: translateY(-3px); background: rgba(255,255,255,0.08); }
+  .reel-thumb { width: 100%; aspect-ratio: 9/16; background: rgba(0,0,0,0.5); background-size: cover; background-position: center; }
+  .reel-stats { padding: 12px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); }
+  .stat-col { display: flex; flex-direction: column; align-items: center; }
+  .stat-col .sl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .stat-col .sv { font-size: 16px; font-weight: 800; color: #fff; }
 </style>
 </head>
 <body>
@@ -214,7 +244,7 @@
   </div>
 
   <div style="text-align: right;">
-    <a href="/reels.html" target="_blank" style="color: var(--text-muted); font-size: 13px; font-weight: 600; text-decoration: none; padding: 4px 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; background: rgba(0,0,0,0.2); transition: all 0.2s;">View All Reels &rarr;</a>
+    <button id="openModalBtn" style="color: var(--text-muted); font-size: 13px; font-weight: 600; padding: 6px 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; background: rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s;">View All Reels &rarr;</button>
   </div>
 
   <div class="glass-panel" style="flex:1;">
@@ -223,6 +253,18 @@
       <span id="logCount" style="color: var(--success);">0 Events</span>
     </div>
     <div class="log-body" id="logBody"></div>
+  </div>
+</div>
+
+<!-- Modal for All Reels -->
+<div class="modal-overlay" id="reelsModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>All Reels</h2>
+      <button class="close-btn" id="closeModalBtn">&times;</button>
+    </div>
+    <div id="modalLoading" style="color:var(--text-muted); font-weight:600; text-align:center; padding: 20px;">Fetching reels...</div>
+    <div class="reels-grid" id="modalReelsGrid"></div>
   </div>
 </div>
 
@@ -395,6 +437,60 @@
       els.timer.textContent = countdownSec + 's';
     }
   }, 1000);
+  // --- Modal Logic ---
+  const modal = document.getElementById('reelsModal');
+  const openBtn = document.getElementById('openModalBtn');
+  const closeBtn = document.getElementById('closeModalBtn');
+  const modalGrid = document.getElementById('modalReelsGrid');
+  const modalLoading = document.getElementById('modalLoading');
+
+  openBtn.addEventListener('click', () => {
+    modal.classList.add('show');
+    loadAllReels();
+  });
+
+  closeBtn.addEventListener('click', () => {
+    modal.classList.remove('show');
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.remove('show');
+  });
+
+  let reelsLoaded = false;
+  async function loadAllReels() {
+    if (reelsLoaded) return;
+    try {
+      const res = await fetch('/api/reels');
+      const json = await res.json();
+      modalLoading.style.display = 'none';
+      if (!json.data || json.data.length === 0) {
+        modalGrid.innerHTML = '<div style="color:rgba(255,255,255,0.6); grid-column: span 3;">No reels found.</div>';
+        return;
+      }
+      
+      json.data.forEach(reel => {
+        const card = document.createElement('a');
+        card.href = reel.permalink || '#';
+        card.target = '_blank';
+        card.className = 'reel-card';
+        const viewsStr = reel.view_count !== null ? format(reel.view_count) : 'N/A';
+        card.innerHTML = `
+          <div class="reel-thumb" style="background-image: url('${reel.thumbnail_url || ''}')"></div>
+          <div class="reel-stats">
+            <div class="stat-col"><div class="sl">Plays</div><div class="sv" style="color:var(--success);">${viewsStr}</div></div>
+            <div class="stat-col"><div class="sl">Likes</div><div class="sv">${format(reel.like_count)}</div></div>
+            <div class="stat-col"><div class="sl">Comms</div><div class="sv">${format(reel.comments_count)}</div></div>
+          </div>
+        `;
+        modalGrid.appendChild(card);
+      });
+      reelsLoaded = true;
+    } catch (e) {
+      modalLoading.textContent = 'Error loading reels.';
+    }
+  }
+
 })();
 </script>
 </body>
