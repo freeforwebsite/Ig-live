@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   // (graph.facebook.com). Tokens generated via Instagram Login only work
   // against graph.instagram.com — sending them to graph.facebook.com causes
   // "Cannot parse access token".
-  const url = `https://graph.instagram.com/v21.0/${encodeURIComponent(cleanUserId)}?fields=followers_count,username&access_token=${encodeURIComponent(cleanToken)}`;
+  const url = `https://graph.instagram.com/v21.0/${encodeURIComponent(cleanUserId)}?fields=followers_count,media_count,username&access_token=${encodeURIComponent(cleanToken)}`;
 
   try {
     const igRes = await fetch(url);
@@ -46,6 +46,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       followers_count: data.followers_count,
+      media_count: data.media_count,
       username: data.username,
       fetched_at: new Date().toISOString()
     });
