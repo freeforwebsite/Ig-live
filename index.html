@@ -129,6 +129,27 @@
     padding:4px 8px;
     flex-shrink:0;
   }
+  .refresh-timer {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--blue-electric);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    padding: 3px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 65px;
+    justify-content: center;
+    background: rgba(0, 212, 255, 0.05);
+  }
+  .refresh-timer.updating {
+    color: var(--green-flash);
+    border-color: rgba(57, 255, 143, 0.3);
+    background: rgba(57, 255, 143, 0.05);
+  }
 
   /* ---- hero counter ---- */
   .hero{
@@ -361,6 +382,7 @@
       <span class="at-sign">#</span>
       <input id="targetInput" type="text" value="NEONFEST2026" maxlength="24" spellcheck="false" autocomplete="off">
     </div>
+    <div class="refresh-timer" id="refreshTimer">2s</div>
     <div class="live-tag">LIVE</div>
   </header>
 
@@ -418,7 +440,8 @@
 (function(){
   const MILESTONE_KEY = 'milestone';
   let MILESTONE = 10000;
-  const POLL_MS = 3000;
+  const POLL_MS = 2000;
+  let countdownSec = POLL_MS / 1000;
 
   let count = null;        // real follower count once first fetched
   let startOfSessionCount = null;
@@ -452,6 +475,7 @@
   const logCount = document.getElementById('logCount');
   const crowdMood = document.getElementById('crowdMood');
   const targetInput = document.getElementById('targetInput');
+  const refreshTimerEl = document.getElementById('refreshTimer');
 
   function formatCount(n){
     return n.toLocaleString('en-US');
@@ -585,6 +609,21 @@
   fetchRealCount();
   setInterval(fetchRealCount, POLL_MS);
   setInterval(updateVelocity, 3000);
+
+  setInterval(() => {
+    countdownSec--;
+    if (countdownSec <= 0) {
+      refreshTimerEl.innerHTML = '<span></span>';
+      refreshTimerEl.classList.add('updating');
+      countdownSec = POLL_MS / 1000;
+      setTimeout(() => {
+        refreshTimerEl.classList.remove('updating');
+        refreshTimerEl.textContent = countdownSec + 's';
+      }, 500); // give it a brief "updating" flash
+    } else {
+      refreshTimerEl.textContent = countdownSec + 's';
+    }
+  }, 1000);
 
   // --- Reel views ---
   const reelViewsEl = document.getElementById('reelViews');
