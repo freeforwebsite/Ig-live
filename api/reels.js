@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
   try {
     // 1. Get latest media
-    const mediaUrl = `https://graph.instagram.com/v21.0/${encodeURIComponent(IG_USER_ID)}/media?fields=id,media_type,media_product_type,timestamp&limit=25&access_token=${encodeURIComponent(IG_ACCESS_TOKEN)}`;
+    const mediaUrl = `https://graph.instagram.com/v21.0/${encodeURIComponent(IG_USER_ID)}/media?fields=id,media_type,media_product_type,timestamp&limit=50&access_token=${encodeURIComponent(IG_ACCESS_TOKEN)}`;
     const mediaRes = await fetch(mediaUrl);
     const mediaData = await mediaRes.json();
 
@@ -16,7 +16,8 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: mediaData.error.message, raw: mediaData.error });
     }
 
-    const reels = (mediaData.data || []).filter(m => m.media_product_type === 'REELS').slice(0, 12);
+    // Grab up to 30 reels
+    const reels = (mediaData.data || []).filter(m => m.media_product_type === 'REELS').slice(0, 30);
     
     if (reels.length === 0) {
       return res.status(200).json({ data: [] });
