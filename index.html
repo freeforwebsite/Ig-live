@@ -427,6 +427,20 @@
   let recentGains = [];    // timestamps of observed increases, for velocity display
   let pollFailures = 0;
 
+  // LOAD FROM LOCAL STORAGE
+  const savedStart = localStorage.getItem('ig_startOfSessionCount');
+  if (savedStart !== null) {
+    startOfSessionCount = parseInt(savedStart, 10);
+  }
+  const savedGained = localStorage.getItem('ig_gainedTonight');
+  if (savedGained !== null) {
+    gainedTonight = parseInt(savedGained, 10);
+  }
+  const savedEventTotal = localStorage.getItem('ig_eventTotal');
+  if (savedEventTotal !== null) {
+    eventTotal = parseInt(savedEventTotal, 10);
+  }
+
   const countDisplay = document.getElementById('countDisplay');
   const deltaFloat = document.getElementById('deltaFloat');
   const barFill = document.getElementById('barFill');
@@ -465,6 +479,13 @@
     else crowdMood.textContent = 'warming up';
   }
 
+  function saveState(){
+    localStorage.setItem('ig_startOfSessionCount', startOfSessionCount);
+    localStorage.setItem('ig_gainedTonight', gainedTonight);
+    localStorage.setItem('ig_eventTotal', eventTotal);
+    localStorage.setItem('ig_logBody', logBody.innerHTML);
+  }
+
   function pushLog(text){
     eventTotal++;
     logCount.textContent = eventTotal + ' events';
@@ -475,16 +496,30 @@
     while (logBody.children.length > 7){
       logBody.removeChild(logBody.lastChild);
     }
+    saveState();
+  }
+
+  // Restore logs on load
+  const savedLogs = localStorage.getItem('ig_logBody');
+  if (savedLogs) {
+    logBody.innerHTML = savedLogs;
+    logCount.textContent = eventTotal + ' events';
   }
 
   function applyNewCount(newCount, username){
     if (count === null){
       // first load
       count = newCount;
-      startOfSessionCount = newCount;
+      if (startOfSessionCount === null) {
+        startOfSessionCount = newCount;
+      }
+      gainedTonight = Math.max(0, count - startOfSessionCount);
       countDisplay.textContent = formatCount(count);
+      gainedTonightEl.textContent = formatCount(gainedTonight);
       updateProgress();
-      pushLog('Connected to <span class="uname">@' + (username || targetInput.value) + '</span> — tracking live');
+      if (!savedLogs) {
+        pushLog('Connected to <span class="uname">@' + (username || targetInput.value) + '</span> — tracking live');
+      }
       return;
     }
 
@@ -564,7 +599,7 @@
         reelViewsEl.textContent = 'N/A';
         return;
       }
-      reelViewsEl.textContent = formatCount(data.view_count);
+      reelViewsEl.textContent = data.view_count !== null ? formatCount(data.view_count) : 'N/A';
       reelEngagementEl.textContent = formatCount(data.like_count) + ' / ' + formatCount(data.comments_count);
     } catch (err){
       reelViewsEl.textContent = 'N/A';
