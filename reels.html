@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Reels</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --text-main: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.6);
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --accent: #ff2a5f;
+    --success: #00e676;
+  }
+  
+  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
+  
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  
+  h1 { font-size: 36px; font-weight: 900; margin-bottom: 30px; letter-spacing: -1px; text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  
+  .reels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    width: 100%;
+    max-width: 1000px;
+  }
+
+  .reel-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .reel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .reel-thumb {
+    width: 100%;
+    aspect-ratio: 9/16;
+    background: rgba(0,0,0,0.5);
+    background-size: cover;
+    background-position: center;
+  }
+
+  .reel-stats {
+    padding: 16px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .stat-col { display: flex; flex-direction: column; align-items: center; }
+  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600; }
+  .stat-val { font-size: 20px; font-weight: 800; color: #fff; }
+  
+  .loading { font-size: 18px; color: var(--text-muted); margin-top: 50px; font-weight: 600; }
+
+</style>
+</head>
+<body>
+
+  <h1>All Reels</h1>
+  <div id="loading" class="loading">Fetching reels...</div>
+  <div class="reels-grid" id="reelsGrid"></div>
+
+<script>
+  function format(n) { return n.toLocaleString('en-US'); }
+
+  async function loadReels() {
+    try {
+      const res = await fetch('/api/reels');
+      const json = await res.json();
+      
+      document.getElementById('loading').style.display = 'none';
+      const grid = document.getElementById('reelsGrid');
+      
+      if (!json.data || json.data.length === 0) {
+        grid.innerHTML = '<div style="color:rgba(255,255,255,0.6);">No reels found.</div>';
+        return;
+      }
+
+      json.data.forEach(reel => {
+        const card = document.createElement('a');
+        card.href = reel.permalink || '#';
+        card.target = '_blank';
+        card.className = 'reel-card';
+        
+        const viewsStr = reel.view_count !== null ? format(reel.view_count) : 'N/A';
+        
+        card.innerHTML = \
+          <div class="reel-thumb" style="background-image: url('\')"></div>
+          <div class="reel-stats">
+            <div class="stat-col">
+              <div class="stat-label">Plays</div>
+              <div class="stat-val" style="color:var(--success);">\</div>
+            </div>
+            <div class="stat-col">
+              <div class="stat-label">Likes</div>
+              <div class="stat-val">\</div>
+            </div>
+            <div class="stat-col">
+              <div class="stat-label">Comments</div>
+              <div class="stat-val">\</div>
+            </div>
+          </div>
+        \;
+        
+        grid.appendChild(card);
+      });
+    } catch (e) {
+      document.getElementById('loading').textContent = 'Error loading reels.';
+    }
+  }
+
+  loadReels();
+</script>
+</body>
+</html>
