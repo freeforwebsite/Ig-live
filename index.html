@@ -395,6 +395,17 @@
     </div>
   </div>
 
+  <div class="stats-row">
+    <div class="stat-card reel">
+      <div class="stat-label">Latest Reel Views</div>
+      <div class="stat-value" id="reelViews" style="color:var(--green-flash); text-shadow:0 0 14px rgba(57,255,143,0.6);">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Reel Likes / Comments</div>
+      <div class="stat-value" id="reelEngagement" style="font-size:20px;">—</div>
+    </div>
+  </div>
+
   <div class="log-block">
     <div class="log-head"><span>Live Activity</span><span class="n" id="logCount">0 events</span></div>
     <div class="log-body" id="logBody"></div>
@@ -539,6 +550,29 @@
   fetchRealCount();
   setInterval(fetchRealCount, POLL_MS);
   setInterval(updateVelocity, 3000);
+
+  // --- Reel views ---
+  const reelViewsEl = document.getElementById('reelViews');
+  const reelEngagementEl = document.getElementById('reelEngagement');
+  const REEL_POLL_MS = 15000;
+
+  async function fetchReel(){
+    try {
+      const res = await fetch('/api/reel', { cache: 'no-store' });
+      const data = await res.json();
+      if (!res.ok || data.error){
+        reelViewsEl.textContent = 'N/A';
+        return;
+      }
+      reelViewsEl.textContent = formatCount(data.view_count);
+      reelEngagementEl.textContent = formatCount(data.like_count) + ' / ' + formatCount(data.comments_count);
+    } catch (err){
+      reelViewsEl.textContent = 'N/A';
+    }
+  }
+
+  fetchReel();
+  setInterval(fetchReel, REEL_POLL_MS);
 })();
 </script>
 </body>
