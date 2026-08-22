@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,263 +8,176 @@
 <style>
   :root {
     --text-main: #ffffff;
-    --text-muted: rgba(255, 255, 255, 0.6);
-    --glass-bg: rgba(255, 255, 255, 0.06);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --accent: #ff2a5f;
-    --accent-glow: rgba(255, 42, 95, 0.6);
+    --text-muted: rgba(255,255,255,0.6);
+    --glass-bg: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.1);
+    --accent1: #ff2a5f;
+    --accent2: #00b4d8;
     --success: #00e676;
   }
-  
-  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
-  
-  body {
-    min-height: 100vh;
-    background: #0f0c29;
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-    color: var(--text-main);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    overflow-x: hidden;
-  }
-  
-  /* Animated background blobs */
-  .blob {
-    position: fixed;
-    filter: blur(80px);
-    z-index: -1;
-    opacity: 0.6;
-    animation: float 10s infinite alternate ease-in-out;
-  }
-  .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #ff2a5f; border-radius: 50%; }
-  .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #6a11cb; border-radius: 50%; animation-delay: -5s; }
-  
-  @keyframes float {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(20px, 40px) scale(1.1); }
-  }
-
-  .container {
-    width: 100%;
-    max-width: 540px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    z-index: 1;
-  }
-
-  .glass-panel {
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  }
-
-  /* Header */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 24px;
-    border-radius: 100px;
-  }
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .live-dot {
-    width: 10px; height: 10px;
-    background: var(--accent);
-    border-radius: 50%;
-    box-shadow: 0 0 12px var(--accent-glow);
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-  .target-input {
-    background: transparent; border: none; outline: none;
-    color: var(--text-main); font-weight: 800; font-size: 16px;
-    text-transform: uppercase; letter-spacing: 1px;
-    width: 150px;
-  }
-  .refresh-timer {
-    font-size: 12px; font-weight: 600; color: var(--text-muted);
-    background: rgba(0,0,0,0.2); padding: 6px 12px; border-radius: 20px;
-    transition: all 0.3s ease;
-  }
-  .refresh-timer.updating { background: rgba(0, 230, 118, 0.2); color: var(--success); }
-
-  /* Hero */
-  .hero { text-align: center; padding: 40px 20px; }
-  .hero-label { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
-  .count-wrapper { position: relative; display: inline-block; }
-  .count-display {
-    font-size: clamp(60px, 15vw, 110px);
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: -2px;
-    text-shadow: 0 0 40px rgba(255,255,255,0.3);
-    transition: all 0.3s ease;
-  }
-  .count-display.flash { transform: scale(1.05); text-shadow: 0 0 60px var(--success); color: #fff; }
-  .delta-float {
-    position: absolute; top: 0; right: -40px;
-    font-size: 20px; font-weight: 800; color: var(--success);
-    opacity: 0; pointer-events: none;
-  }
-  .delta-float.show { animation: floatup 1s ease-out forwards; }
-  @keyframes floatup { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
-
-  /* Progress */
-  .progress-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;}
-  .progress-track { height: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden; }
-  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff2a5f, #ff7e5f); border-radius: 10px; transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
-
-  /* Grid Stats */
-  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .stat-box { padding: 16px 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
-  .stat-value { font-size: 26px; font-weight: 800; }
-  .stat-value span { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-left: 2px; }
-  
-  .reel-box { grid-column: span 3; display: flex; justify-content: space-around; padding: 20px 10px; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; }
-  .reel-box:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3); }
-  .reel-item { display: flex; flex-direction: column; align-items: center; }
-  .reel-item .stat-value { font-size: 24px; color: #fff; }
-
-  /* Event Log */
-  .log-header { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: flex; justify-content: space-between; }
-  .log-body { display: flex; flex-direction: column; gap: 10px; }
-  .log-row { 
-    background: rgba(0,0,0,0.15); padding: 12px 16px; border-radius: 12px;
-    font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px;
-    animation: slidein 0.3s ease-out;
-  }
-  @keyframes slidein { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-  .log-row .dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
-  .log-row strong { color: var(--text-main); font-weight: 700; }
-
-  /* Modal */
-  .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    z-index: 100; display: none; justify-content: center; align-items: center; padding: 20px;
-    opacity: 0; transition: opacity 0.3s ease;
-  }
-  .modal-overlay.show { display: flex; opacity: 1; }
-  .modal-content {
-    background: rgba(30, 25, 60, 0.9);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px; width: 100%; max-width: 800px; max-height: 85vh;
-    overflow-y: auto; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    transform: translateY(20px); transition: transform 0.3s ease;
-  }
-  .modal-overlay.show .modal-content { transform: translateY(0); }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .modal-header h2 { font-size: 24px; font-weight: 900; letter-spacing: -1px; }
-  .close-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; transition: background 0.2s; }
-  .close-btn:hover { background: rgba(255,255,255,0.2); }
-  
-  .reels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-  .reel-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; transition: transform 0.2s; }
-  .reel-card:hover { transform: translateY(-3px); background: rgba(255,255,255,0.08); }
-  .reel-thumb { width: 100%; aspect-ratio: 9/16; background: rgba(0,0,0,0.5); background-size: cover; background-position: center; }
-  .reel-stats { padding: 12px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); }
-  .stat-col { display: flex; flex-direction: column; align-items: center; }
-  .stat-col .sl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
-  .stat-col .sv { font-size: 16px; font-weight: 800; color: #fff; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+  body { min-height:100vh; background:linear-gradient(135deg,#0f0c29,#302b63,#24243e); color:var(--text-main); padding:16px; overflow-x:hidden; }
+  .blob { position:fixed; filter:blur(80px); z-index:-1; opacity:0.5; animation:float 10s infinite alternate ease-in-out; }
+  .blob-1 { top:-10%;left:-10%;width:50vw;height:50vw;background:#ff2a5f;border-radius:50%; }
+  .blob-2 { bottom:-10%;right:-10%;width:60vw;height:60vw;background:#6a11cb;border-radius:50%;animation-delay:-5s; }
+  @keyframes float { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(20px,40px) scale(1.1);} }
+  .topbar { display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:16px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;font-weight:700; }
+  .topbar .live-dot { width:8px;height:8px;background:var(--success);border-radius:50%;box-shadow:0 0 8px var(--success);animation:pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .refresh-pill { background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--text-muted);transition:all 0.3s; }
+  .refresh-pill.updating { color:var(--success);border-color:rgba(0,230,118,0.3); }
+  .split { display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1100px;margin:0 auto; }
+  @media(max-width:680px){ .split{grid-template-columns:1fr;} }
+  .panel { display:flex;flex-direction:column;gap:12px; }
+  .glass { background:var(--glass-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:20px;padding:18px; }
+  .panel-header { display:flex;justify-content:space-between;align-items:center;padding:10px 18px;border-radius:100px; }
+  .panel-header .username { font-size:15px;font-weight:800;letter-spacing:0.5px; }
+  .panel-header .live-badge { font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:1px; }
+  .acc1 .live-badge { background:var(--accent1);color:#fff; }
+  .acc2 .live-badge { background:var(--accent2);color:#000; }
+  .hero { text-align:center;padding:20px 10px 8px;position:relative; }
+  .hero-label { font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;font-weight:600; }
+  .count-wrap { position:relative;display:inline-block; }
+  .count-num { font-size:clamp(48px,10vw,80px);font-weight:900;line-height:1;letter-spacing:-2px;text-shadow:0 0 30px rgba(255,255,255,0.2);transition:all 0.3s; }
+  .count-num.flash { transform:scale(1.06);text-shadow:0 0 50px var(--success); }
+  .delta { position:absolute;top:0;right:-36px;font-size:16px;font-weight:800;color:var(--success);opacity:0;pointer-events:none; }
+  .delta.show { animation:floatup 1s ease-out forwards; }
+  @keyframes floatup { 0%{opacity:1;transform:translateY(0);} 100%{opacity:0;transform:translateY(-36px);} }
+  .prog-head { display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px; }
+  .prog-track { height:10px;background:rgba(0,0,0,0.3);border-radius:10px;overflow:hidden; }
+  .prog-fill { height:100%;width:0%;border-radius:10px;transition:width 0.8s cubic-bezier(0.2,0.8,0.2,1); }
+  .acc1 .prog-fill { background:linear-gradient(90deg,#ff2a5f,#ff7e5f); }
+  .acc2 .prog-fill { background:linear-gradient(90deg,#00b4d8,#90e0ef); }
+  .mini-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px; }
+  .mini-box { text-align:center;padding:12px 6px; }
+  .mini-label { font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;font-weight:600; }
+  .mini-val { font-size:22px;font-weight:800; }
+  .mini-val small { font-size:11px;color:var(--text-muted);margin-left:2px; }
+  .reel-box { display:flex;gap:14px;align-items:center;text-decoration:none;border-radius:20px;padding:14px;transition:transform 0.2s,box-shadow 0.2s; }
+  .reel-box:hover { transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+  .reel-thumb { width:48px;height:64px;border-radius:8px;background:rgba(0,0,0,0.3);background-size:cover;background-position:center;flex-shrink:0; }
+  .reel-stats { flex:1;display:flex;justify-content:space-around; }
+  .reel-col { display:flex;flex-direction:column;align-items:center; }
+  .reel-col .rl { font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600;margin-bottom:4px; }
+  .reel-col .rv { font-size:18px;font-weight:800; }
+  .log-head { display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:700;margin-bottom:12px; }
+  .log-body { display:flex;flex-direction:column;gap:8px;max-height:180px;overflow:hidden; }
+  .log-row { background:rgba(0,0,0,0.15);padding:10px 12px;border-radius:10px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;animation:slidein 0.3s ease-out; }
+  @keyframes slidein { from{opacity:0;transform:translateX(-8px);} to{opacity:1;transform:translateX(0);} }
+  .log-row .dot { width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0; }
+  .log-row strong { color:#fff;font-weight:700; }
+  .modal-overlay { position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:100;display:none;justify-content:center;align-items:center;padding:20px;opacity:0;transition:opacity 0.3s; }
+  .modal-overlay.show { display:flex;opacity:1; }
+  .modal-content { background:rgba(30,25,60,0.95);border:1px solid var(--glass-border);border-radius:24px;width:100%;max-width:840px;max-height:85vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);transform:translateY(16px);transition:transform 0.3s; }
+  .modal-overlay.show .modal-content { transform:translateY(0); }
+  .modal-top { display:flex;justify-content:space-between;align-items:center;margin-bottom:20px; }
+  .modal-top h2 { font-size:22px;font-weight:900; }
+  .close-btn { background:rgba(255,255,255,0.1);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer; }
+  .close-btn:hover { background:rgba(255,255,255,0.2); }
+  .reels-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px; }
+  .reel-card { background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;text-decoration:none;display:flex;flex-direction:column;transition:transform 0.2s; }
+  .reel-card:hover { transform:translateY(-3px); }
+  .reel-card .rc-thumb { width:100%;aspect-ratio:9/16;background:rgba(0,0,0,0.5);background-size:cover;background-position:center; }
+  .reel-card .rc-stats { padding:10px;display:flex;justify-content:space-around; }
+  .rc-col { display:flex;flex-direction:column;align-items:center; }
+  .rc-col .rcl { font-size:9px;text-transform:uppercase;color:var(--text-muted);font-weight:600;margin-bottom:2px; }
+  .rc-col .rcv { font-size:15px;font-weight:800;color:#fff; }
 </style>
 </head>
 <body>
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
 
-<div class="container">
-  <div class="glass-panel header">
-    <div class="header-left">
-      <div class="live-dot"></div>
-      <div>#<input id="targetInput" class="target-input" type="text" value="NEONFEST2026" maxlength="24" spellcheck="false" autocomplete="off"></div>
-    </div>
-    <div class="refresh-timer" id="refreshTimer">2s</div>
-  </div>
-
-  <div class="hero">
-    <div class="hero-label">Live Followers</div>
-    <div class="count-wrapper">
-      <div class="count-display" id="countDisplay">0</div>
-      <div class="delta-float" id="deltaFloat">+1</div>
-    </div>
-  </div>
-
-  <div class="glass-panel">
-    <div class="progress-header">
-      <span>Road to <span id="targetLabel" style="color:#fff;">10,000</span></span>
-      <span id="barPct" style="color: var(--accent);">0%</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="barFill"></div>
-    </div>
-  </div>
-
-  <div class="stats-grid">
-    <div class="glass-panel stat-box">
-      <div class="stat-label">Total Posts</div>
-      <div class="stat-value" id="totalPosts" style="color: var(--text-main);">0</div>
-    </div>
-    <div class="glass-panel stat-box">
-      <div class="stat-label">Gained</div>
-      <div class="stat-value" id="gainedTonight" style="color: var(--accent);">0</div>
-    </div>
-    <div class="glass-panel stat-box">
-      <div class="stat-label">Velocity</div>
-      <div class="stat-value" id="velocity">0<span>/min</span></div>
-    </div>
-    <a href="#" target="_blank" id="reelLink" class="glass-panel reel-box" style="text-decoration: none; align-items: center; justify-content: flex-start; gap: 20px;">
-      <div id="reelThumb" style="width: 60px; height: 80px; background: rgba(0,0,0,0.3); border-radius: 8px; background-size: cover; background-position: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2);"></div>
-      <div style="flex:1; display:flex; justify-content: space-around; align-items:center;">
-        <div class="reel-item">
-          <div class="stat-label">Plays</div>
-          <div class="stat-value" id="reelViews" style="color: var(--success);">—</div>
-        </div>
-        <div class="reel-item">
-          <div class="stat-label">Likes</div>
-          <div class="stat-value" id="reelLikes">—</div>
-        </div>
-        <div class="reel-item">
-          <div class="stat-label">Comments</div>
-          <div class="stat-value" id="reelComments">—</div>
-        </div>
-      </div>
-    </a>
-  </div>
-
-  <div style="text-align: right;">
-    <button id="openModalBtn" style="color: var(--text-muted); font-size: 13px; font-weight: 600; padding: 6px 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; background: rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s;">View All Reels &rarr;</button>
-  </div>
-
-  <div class="glass-panel" style="flex:1;">
-    <div class="log-header">
-      <span>Live Activity</span>
-      <span id="logCount" style="color: var(--success);">0 Events</span>
-    </div>
-    <div class="log-body" id="logBody"></div>
-  </div>
+<div class="topbar">
+  <div class="live-dot"></div>
+  <span>Live Instagram Dashboard</span>
+  <div class="refresh-pill" id="refreshTimer">2s</div>
 </div>
 
-<!-- Modal for All Reels -->
+<div class="split">
+
+  <!-- ACCOUNT 1 -->
+  <div class="panel acc1">
+    <div class="glass panel-header">
+      <div class="username" id="uname1">@loading...</div>
+      <div class="live-badge">LIVE</div>
+    </div>
+    <div class="hero">
+      <div class="hero-label">Followers Right Now</div>
+      <div class="count-wrap">
+        <div class="count-num" id="count1">0</div>
+        <div class="delta" id="delta1">+1</div>
+      </div>
+    </div>
+    <div class="glass">
+      <div class="prog-head"><span>Road to <span id="target1" style="color:#fff;">10,000</span></span><span id="pct1" style="color:var(--accent1);">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" id="fill1"></div></div>
+    </div>
+    <div class="mini-grid">
+      <div class="glass mini-box"><div class="mini-label">Posts</div><div class="mini-val" id="posts1">0</div></div>
+      <div class="glass mini-box"><div class="mini-label">Gained</div><div class="mini-val" id="gained1" style="color:var(--accent1);">0</div></div>
+      <div class="glass mini-box"><div class="mini-label">Velocity</div><div class="mini-val" id="vel1">0<small>/min</small></div></div>
+    </div>
+    <a href="#" target="_blank" id="reelLink1" class="glass reel-box">
+      <div class="reel-thumb" id="reelThumb1"></div>
+      <div class="reel-stats">
+        <div class="reel-col"><div class="rl">Plays</div><div class="rv" id="reelViews1" style="color:var(--success);">--</div></div>
+        <div class="reel-col"><div class="rl">Likes</div><div class="rv" id="reelLikes1">--</div></div>
+        <div class="reel-col"><div class="rl">Comms</div><div class="rv" id="reelComms1">--</div></div>
+      </div>
+    </a>
+    <div style="text-align:right;"><button id="openModal1" style="color:var(--text-muted);font-size:12px;font-weight:600;padding:5px 14px;border:1px solid rgba(255,255,255,0.1);border-radius:100px;background:rgba(0,0,0,0.2);cursor:pointer;">All Reels &rarr;</button></div>
+    <div class="glass">
+      <div class="log-head"><span>Live Activity</span><span id="logCount1" style="color:var(--success);">0 Events</span></div>
+      <div class="log-body" id="logBody1"></div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT 2 -->
+  <div class="panel acc2">
+    <div class="glass panel-header">
+      <div class="username" id="uname2">@loading...</div>
+      <div class="live-badge">LIVE</div>
+    </div>
+    <div class="hero">
+      <div class="hero-label">Followers Right Now</div>
+      <div class="count-wrap">
+        <div class="count-num" id="count2">0</div>
+        <div class="delta" id="delta2">+1</div>
+      </div>
+    </div>
+    <div class="glass">
+      <div class="prog-head"><span>Road to <span id="target2" style="color:#fff;">10,000</span></span><span id="pct2" style="color:var(--accent2);">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" id="fill2"></div></div>
+    </div>
+    <div class="mini-grid">
+      <div class="glass mini-box"><div class="mini-label">Posts</div><div class="mini-val" id="posts2">0</div></div>
+      <div class="glass mini-box"><div class="mini-label">Gained</div><div class="mini-val" id="gained2" style="color:var(--accent2);">0</div></div>
+      <div class="glass mini-box"><div class="mini-label">Velocity</div><div class="mini-val" id="vel2">0<small>/min</small></div></div>
+    </div>
+    <a href="#" target="_blank" id="reelLink2" class="glass reel-box">
+      <div class="reel-thumb" id="reelThumb2"></div>
+      <div class="reel-stats">
+        <div class="reel-col"><div class="rl">Plays</div><div class="rv" id="reelViews2" style="color:var(--success);">--</div></div>
+        <div class="reel-col"><div class="rl">Likes</div><div class="rv" id="reelLikes2">--</div></div>
+        <div class="reel-col"><div class="rl">Comms</div><div class="rv" id="reelComms2">--</div></div>
+      </div>
+    </a>
+    <div style="text-align:right;"><button id="openModal2" style="color:var(--text-muted);font-size:12px;font-weight:600;padding:5px 14px;border:1px solid rgba(255,255,255,0.1);border-radius:100px;background:rgba(0,0,0,0.2);cursor:pointer;">All Reels &rarr;</button></div>
+    <div class="glass">
+      <div class="log-head"><span>Live Activity</span><span id="logCount2" style="color:var(--success);">0 Events</span></div>
+      <div class="log-body" id="logBody2"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Shared Modal -->
 <div class="modal-overlay" id="reelsModal">
   <div class="modal-content">
-    <div class="modal-header">
-      <h2>All Reels</h2>
-      <button class="close-btn" id="closeModalBtn">&times;</button>
-    </div>
-    <div id="modalLoading" style="color:var(--text-muted); font-weight:600; text-align:center; padding: 20px;">Fetching reels...</div>
-    <div class="reels-grid" id="modalReelsGrid"></div>
+    <div class="modal-top"><h2 id="modalTitle">All Reels</h2><button class="close-btn" id="closeModal">&times;</button></div>
+    <div id="modalLoading" style="color:var(--text-muted);text-align:center;padding:20px;font-weight:600;">Fetching reels...</div>
+    <div class="reels-grid" id="modalGrid"></div>
   </div>
 </div>
 
@@ -273,224 +186,154 @@
   const MILESTONE = 10000;
   const POLL_MS = 2000;
   let countdownSec = POLL_MS / 1000;
-
-  let count = null;
-  let startOfSessionCount = null;
-  let gainedTonight = 0;
-  let eventTotal = 0;
-  let recentGains = [];
-  
-  // Elements
-  const els = {
-    count: document.getElementById('countDisplay'),
-    delta: document.getElementById('deltaFloat'),
-    barFill: document.getElementById('barFill'),
-    barPct: document.getElementById('barPct'),
-    targetLbl: document.getElementById('targetLabel'),
-    posts: document.getElementById('totalPosts'),
-    gained: document.getElementById('gainedTonight'),
-    vel: document.getElementById('velocity'),
-    logBody: document.getElementById('logBody'),
-    logCount: document.getElementById('logCount'),
-    targetInp: document.getElementById('targetInput'),
-    timer: document.getElementById('refreshTimer'),
-    rViews: document.getElementById('reelViews'),
-    rLikes: document.getElementById('reelLikes'),
-    rComms: document.getElementById('reelComments'),
-    rThumb: document.getElementById('reelThumb'),
-    rLink: document.getElementById('reelLink')
-  };
-
-  const savedStart = localStorage.getItem('ig_startOfSessionCount');
-  if (savedStart) startOfSessionCount = parseInt(savedStart, 10);
-  const savedGained = localStorage.getItem('ig_gainedTonight');
-  if (savedGained) gainedTonight = parseInt(savedGained, 10);
-  const savedEventTotal = localStorage.getItem('ig_eventTotal');
-  if (savedEventTotal) eventTotal = parseInt(savedEventTotal, 10);
-  const savedLogs = localStorage.getItem('ig_logBody');
-  if (savedLogs) els.logBody.innerHTML = savedLogs;
-
   function format(n){ return n.toLocaleString('en-US'); }
 
-  function saveState(){
-    localStorage.setItem('ig_startOfSessionCount', startOfSessionCount);
-    localStorage.setItem('ig_gainedTonight', gainedTonight);
-    localStorage.setItem('ig_eventTotal', eventTotal);
-    localStorage.setItem('ig_logBody', els.logBody.innerHTML);
-  }
+  function makeTracker(id, apiUrl, reelApiUrl, storageKey){
+    let count=null, startCount=null, gained=0, eventTotal=0, recentGains=[];
+    const saved={
+      start: localStorage.getItem(storageKey+'_start'),
+      gained: localStorage.getItem(storageKey+'_gained'),
+      events: localStorage.getItem(storageKey+'_events'),
+      logs: localStorage.getItem(storageKey+'_logs'),
+    };
+    if(saved.start) startCount=parseInt(saved.start,10);
+    if(saved.gained) gained=parseInt(saved.gained,10);
+    if(saved.events) eventTotal=parseInt(saved.events,10);
 
-  function pushLog(text){
-    eventTotal++;
-    els.logCount.textContent = eventTotal + ' Events';
-    const row = document.createElement('div');
-    row.className = 'log-row';
-    row.innerHTML = '<div class="dot"></div><span>' + text + '</span>';
-    els.logBody.insertBefore(row, els.logBody.firstChild);
-    while (els.logBody.children.length > 6) els.logBody.removeChild(els.logBody.lastChild);
-    saveState();
-  }
+    const els={
+      uname:document.getElementById('uname'+id), count:document.getElementById('count'+id),
+      delta:document.getElementById('delta'+id), fill:document.getElementById('fill'+id),
+      pct:document.getElementById('pct'+id), posts:document.getElementById('posts'+id),
+      gained:document.getElementById('gained'+id), vel:document.getElementById('vel'+id),
+      logBody:document.getElementById('logBody'+id), logCnt:document.getElementById('logCount'+id),
+      rViews:document.getElementById('reelViews'+id), rLikes:document.getElementById('reelLikes'+id),
+      rComms:document.getElementById('reelComms'+id), rThumb:document.getElementById('reelThumb'+id),
+      rLink:document.getElementById('reelLink'+id),
+    };
 
-  if (savedLogs) els.logCount.textContent = eventTotal + ' Events';
+    if(saved.logs){ els.logBody.innerHTML=saved.logs; els.logCnt.textContent=eventTotal+' Events'; }
+    if(saved.gained) els.gained.textContent=format(gained);
 
-  function updateProgress(){
-    if (count === null) return;
-    const pct = Math.min(100, (count / MILESTONE) * 100);
-    els.barFill.style.width = pct.toFixed(1) + '%';
-    els.barPct.textContent = pct >= 100 ? 'DONE!' : pct.toFixed(1) + '%';
-    els.targetLbl.textContent = format(MILESTONE);
-  }
-
-  function updateVelocity(){
-    const now = Date.now();
-    recentGains = recentGains.filter(t => now - t < 60000);
-    els.vel.innerHTML = recentGains.length + '<span>/min</span>';
-  }
-
-  function applyNewCount(newCount, mediaCount, username){
-    if (count === null){
-      count = newCount;
-      if (startOfSessionCount === null) startOfSessionCount = newCount;
-      gainedTonight = Math.max(0, count - startOfSessionCount);
-      els.count.textContent = format(count);
-      els.gained.textContent = format(gainedTonight);
-      if (mediaCount !== undefined) els.posts.textContent = format(mediaCount);
-      updateProgress();
-      if (!savedLogs) pushLog('Connected to <strong>@' + (username || els.targetInp.value) + '</strong>');
-      return;
+    function save(){
+      localStorage.setItem(storageKey+'_start',startCount);
+      localStorage.setItem(storageKey+'_gained',gained);
+      localStorage.setItem(storageKey+'_events',eventTotal);
+      localStorage.setItem(storageKey+'_logs',els.logBody.innerHTML);
     }
-
-    const diff = newCount - count;
-    
-    if (mediaCount !== undefined) els.posts.textContent = format(mediaCount);
-
-    if (diff === 0) return;
-
-    count = newCount;
-    gainedTonight = Math.max(0, count - startOfSessionCount);
-
-    if (diff > 0){
-      recentGains.push(Date.now());
-      pushLog('<strong>+' + diff + '</strong> new follower' + (diff > 1 ? 's' : '') + '!');
-    } else {
-      pushLog('Count adjusted <strong>' + diff + '</strong>');
+    function pushLog(text){
+      eventTotal++; els.logCnt.textContent=eventTotal+' Events';
+      const row=document.createElement('div'); row.className='log-row';
+      row.innerHTML='<div class="dot"></div><span>'+text+'</span>';
+      els.logBody.insertBefore(row,els.logBody.firstChild);
+      while(els.logBody.children.length>5) els.logBody.removeChild(els.logBody.lastChild);
+      save();
     }
-
-    els.count.textContent = format(count);
-    els.count.classList.remove('flash');
-    void els.count.offsetWidth;
-    els.count.classList.add('flash');
-
-    els.delta.textContent = (diff > 0 ? '+' : '') + diff;
-    els.delta.classList.remove('show');
-    void els.delta.offsetWidth;
-    els.delta.classList.add('show');
-
-    els.gained.textContent = format(gainedTonight);
-    updateProgress();
-    updateVelocity();
-  }
-
-  async function fetchRealCount(){
-    try {
-      const res = await fetch('/api/followers', { cache: 'no-store' });
-      const data = await res.json();
-      if (res.ok && !data.error) applyNewCount(data.followers_count, data.media_count, data.username);
-    } catch (e){}
-  }
-
-  async function fetchReel(){
-    try {
-      const res = await fetch('/api/reel', { cache: 'no-store' });
-      const data = await res.json();
-      if (res.ok && !data.error) {
-        els.rViews.textContent = data.view_count !== null ? format(data.view_count) : 'N/A';
-        els.rLikes.textContent = format(data.like_count);
-        els.rComms.textContent = format(data.comments_count);
-        if (data.thumbnail_url) {
-          els.rThumb.style.backgroundImage = 'url(' + data.thumbnail_url + ')';
-        }
-        if (data.permalink) {
-          els.rLink.href = data.permalink;
-        }
-      }
-    } catch (e){}
-  }
-
-  els.targetInp.addEventListener('input', () => { els.targetInp.value = els.targetInp.value.toUpperCase(); });
-
-  fetchRealCount(); fetchReel();
-  setInterval(fetchRealCount, POLL_MS);
-  setInterval(fetchReel, 15000);
-  setInterval(updateVelocity, 3000);
-
-  setInterval(() => {
-    countdownSec--;
-    if (countdownSec <= 0) {
-      els.timer.classList.add('updating');
-      els.timer.textContent = 'UPDATING...';
-      countdownSec = POLL_MS / 1000;
-      setTimeout(() => {
-        els.timer.classList.remove('updating');
-        els.timer.textContent = countdownSec + 's';
-      }, 500);
-    } else {
-      els.timer.textContent = countdownSec + 's';
+    function updateVel(){
+      const now=Date.now(); recentGains=recentGains.filter(t=>now-t<60000);
+      els.vel.innerHTML=recentGains.length+'<small>/min</small>';
     }
-  }, 1000);
-  // --- Modal Logic ---
-  const modal = document.getElementById('reelsModal');
-  const openBtn = document.getElementById('openModalBtn');
-  const closeBtn = document.getElementById('closeModalBtn');
-  const modalGrid = document.getElementById('modalReelsGrid');
-  const modalLoading = document.getElementById('modalLoading');
-
-  openBtn.addEventListener('click', () => {
-    modal.classList.add('show');
-    loadAllReels();
-  });
-
-  closeBtn.addEventListener('click', () => {
-    modal.classList.remove('show');
-  });
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.classList.remove('show');
-  });
-
-  let reelsLoaded = false;
-  async function loadAllReels() {
-    if (reelsLoaded) return;
-    try {
-      const res = await fetch('/api/reels');
-      const json = await res.json();
-      modalLoading.style.display = 'none';
-      if (!json.data || json.data.length === 0) {
-        modalGrid.innerHTML = '<div style="color:rgba(255,255,255,0.6); grid-column: span 3;">No reels found.</div>';
+    function applyCount(newCount,mediaCount,username){
+      if(els.uname.textContent==='@loading...') els.uname.textContent='@'+(username||'account'+id);
+      if(count===null){
+        count=newCount;
+        if(startCount===null) startCount=newCount;
+        gained=Math.max(0,count-startCount);
+        els.count.textContent=format(count);
+        els.gained.textContent=format(gained);
+        if(mediaCount!==undefined) els.posts.textContent=format(mediaCount);
+        const pct=Math.min(100,(count/MILESTONE)*100);
+        els.fill.style.width=pct.toFixed(1)+'%'; els.pct.textContent=pct.toFixed(1)+'%';
+        if(!saved.logs) pushLog('Connected to <strong>@'+(username||'account'+id)+'</strong>');
         return;
       }
-      
-      json.data.forEach(reel => {
-        const card = document.createElement('a');
-        card.href = reel.permalink || '#';
-        card.target = '_blank';
-        card.className = 'reel-card';
-        const viewsStr = reel.view_count !== null ? format(reel.view_count) : 'N/A';
-        card.innerHTML = `
-          <div class="reel-thumb" style="background-image: url('${reel.thumbnail_url || ''}')"></div>
-          <div class="reel-stats">
-            <div class="stat-col"><div class="sl">Plays</div><div class="sv" style="color:var(--success);">${viewsStr}</div></div>
-            <div class="stat-col"><div class="sl">Likes</div><div class="sv">${format(reel.like_count)}</div></div>
-            <div class="stat-col"><div class="sl">Comms</div><div class="sv">${format(reel.comments_count)}</div></div>
-          </div>
-        `;
-        modalGrid.appendChild(card);
-      });
-      reelsLoaded = true;
-    } catch (e) {
-      modalLoading.textContent = 'Error loading reels.';
+      const diff=newCount-count;
+      if(mediaCount!==undefined) els.posts.textContent=format(mediaCount);
+      if(diff===0) return;
+      count=newCount; gained=Math.max(0,count-startCount);
+      if(diff>0){ recentGains.push(Date.now()); pushLog('<strong>+'+diff+'</strong> new follower'+(diff>1?'s':'')+'!'); }
+      else pushLog('Count adjusted <strong>'+diff+'</strong>');
+      els.count.textContent=format(count);
+      els.count.classList.remove('flash'); void els.count.offsetWidth; els.count.classList.add('flash');
+      els.delta.textContent=(diff>0?'+':'')+diff;
+      els.delta.classList.remove('show'); void els.delta.offsetWidth; els.delta.classList.add('show');
+      els.gained.textContent=format(gained);
+      const pct=Math.min(100,(count/MILESTONE)*100);
+      els.fill.style.width=pct.toFixed(1)+'%'; els.pct.textContent=pct.toFixed(1)+'%';
+      updateVel(); save();
     }
+    async function fetchFollowers(){
+      try{
+        const res=await fetch(apiUrl,{cache:'no-store'}); const data=await res.json();
+        if(res.ok&&!data.error) applyCount(data.followers_count,data.media_count,data.username);
+        else if(count===null) els.count.textContent='Setup needed';
+      }catch(e){}
+    }
+    async function fetchReel(){
+      try{
+        const res=await fetch(reelApiUrl,{cache:'no-store'}); const data=await res.json();
+        if(res.ok&&!data.error){
+          els.rViews.textContent=data.view_count!==null?format(data.view_count):'N/A';
+          els.rLikes.textContent=format(data.like_count);
+          els.rComms.textContent=format(data.comments_count);
+          if(data.thumbnail_url) els.rThumb.style.backgroundImage='url('+data.thumbnail_url+')';
+          if(data.permalink) els.rLink.href=data.permalink;
+        }
+      }catch(e){}
+    }
+    fetchFollowers(); fetchReel();
+    setInterval(fetchFollowers,POLL_MS);
+    setInterval(fetchReel,15000);
+    setInterval(updateVel,3000);
   }
 
+  makeTracker(1,'/api/followers','/api/reel','ig1');
+  makeTracker(2,'/api/followers2','/api/reel2','ig2');
+
+  const timerEl=document.getElementById('refreshTimer');
+  setInterval(()=>{
+    countdownSec--;
+    if(countdownSec<=0){
+      timerEl.classList.add('updating'); timerEl.textContent='...';
+      countdownSec=POLL_MS/1000;
+      setTimeout(()=>{ timerEl.classList.remove('updating'); timerEl.textContent=countdownSec+'s'; },500);
+    } else timerEl.textContent=countdownSec+'s';
+  },1000);
+
+  const modal=document.getElementById('reelsModal');
+  const modalTitle=document.getElementById('modalTitle');
+  const modalGrid=document.getElementById('modalGrid');
+  const modalLoading=document.getElementById('modalLoading');
+  document.getElementById('closeModal').onclick=()=>modal.classList.remove('show');
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('show'); });
+  let cache={};
+  async function openModal(apiUrl,title){
+    modalTitle.textContent=title; modalGrid.innerHTML='';
+    modalLoading.style.display='block'; modalLoading.textContent='Fetching reels...';
+    modal.classList.add('show');
+    if(cache[apiUrl]){ renderReels(cache[apiUrl]); return; }
+    try{
+      const res=await fetch(apiUrl); const json=await res.json();
+      modalLoading.style.display='none';
+      if(!json.data||json.data.length===0){ modalLoading.textContent='No reels found.';modalLoading.style.display='block';return; }
+      cache[apiUrl]=json.data; renderReels(json.data);
+    }catch(e){ modalLoading.textContent='Error loading reels.'; }
+  }
+  function renderReels(data){
+    modalLoading.style.display='none';
+    data.forEach(reel=>{
+      const card=document.createElement('a'); card.href=reel.permalink||'#'; card.target='_blank'; card.className='reel-card';
+      const v=reel.view_count!==null?format(reel.view_count):'N/A';
+      card.innerHTML=`<div class="rc-thumb" style="background-image:url('${reel.thumbnail_url||''}')"></div>
+        <div class="rc-stats">
+          <div class="rc-col"><div class="rcl">Plays</div><div class="rcv" style="color:var(--success);">${v}</div></div>
+          <div class="rc-col"><div class="rcl">Likes</div><div class="rcv">${format(reel.like_count)}</div></div>
+          <div class="rc-col"><div class="rcl">Comms</div><div class="rcv">${format(reel.comments_count)}</div></div>
+        </div>`;
+      modalGrid.appendChild(card);
+    });
+  }
+  document.getElementById('openModal1').onclick=()=>openModal('/api/reels','Account 1 — All Reels');
+  document.getElementById('openModal2').onclick=()=>openModal('/api/reels2','Account 2 — All Reels');
 })();
 </script>
 </body>
